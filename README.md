@@ -1,219 +1,199 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<title>MINH AN CACHE MAKE</title>
-<style>
-:root{color-scheme:dark}
-*{box-sizing:border-box}
-body{margin:0;padding:18px;background:#0b0d12;color:#eee;
-font:15px -apple-system,BlinkMacSystemFont,sans-serif}
-.app{max-width:620px;margin:auto}
-h1{font-size:25px;color:#f1d56b;margin:8px 0}
-.sub{color:#9299a9;font-size:12px;letter-spacing:1px}
-.panel{background:#151923;border:1px solid #2b3040;
-border-radius:15px;padding:16px;margin:14px 0}
-h2{font-size:16px;margin:0 0 12px}
-button,.pick{display:block;width:100%;padding:14px;
-border:0;border-radius:10px;background:#e6cc63;color:#151515;
-font-size:15px;font-weight:700;text-align:center;margin-top:10px}
-button:disabled{opacity:.4}
-input[type=file]{width:100%;font-size:13px}
-input[type=text]{width:100%;padding:12px;background:#0b0d12;
-border:1px solid #343b4c;border-radius:9px;color:white}
-.muted{color:#9aa3b5;font-size:13px;line-height:1.55}
-.result{white-space:pre-wrap;overflow-wrap:anywhere;
-background:#0b0d12;border-radius:10px;padding:12px;
-font:12px ui-monospace,monospace;max-height:330px;overflow:auto}
-.status{color:#e6cc63;font-weight:600}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tool Make Code Cache</title>
+    <style>
+        :root {
+            --bg-color: #12141c;
+            --card-bg: #1a1d29;
+            --text-color: #ffffff;
+            --text-secondary: #94a3b8;
+            --accent-red: #ef4444;
+            --accent-yellow: #eab308;
+            --border-color: #2a2e3d;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); padding: 16px; }
+        .header { display: flex; align-items: center; justify-content: space-between; background: var(--card-bg); padding: 12px 16px; border-radius: 12px; margin-bottom: 16px; border: 1px solid var(--border-color); }
+        .header h1 { font-size: 16px; display: flex; align-items: center; gap: 8px; }
+        .header h1 span { background: #3b82f6; color: white; padding: 2px 8px; border-radius: 6px; font-size: 14px; }
+        
+        .preview-box { background: var(--card-bg); border-radius: 12px; padding: 16px; text-align: center; margin-bottom: 16px; border: 1px solid var(--border-color); position: relative; height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .preview-title { position: absolute; top: 12px; left: 16px; font-size: 14px; color: var(--text-secondary); }
+        
+        /* Mô phỏng nhân vật và hitbox */
+        .character-container { position: relative; width: 80px; height: 160px; margin-top: 15px; }
+        .dummy-head { width: 36px; height: 36px; background: #d1d5db; border-radius: 50%; position: absolute; top: 0; left: 22px; }
+        .dummy-body { width: 50px; height: 80px; background: #374151; border-radius: 8px; position: absolute; top: 38px; left: 15px; }
+        
+        .hitbox-circle { position: absolute; border-radius: 50%; pointer-events: none; transition: all 0.1s ease; }
+        #preview-red { border: 2px dashed var(--accent-red); top: -10px; left: 12px; width: 56px; height: 56px; }
+        #preview-yellow { border: 2px dashed var(--accent-yellow); top: 30px; left: 5px; width: 70px; height: 90px; }
+
+        .section { background: var(--card-bg); border-radius: 12px; padding: 16px; margin-bottom: 16px; border: 1px solid var(--border-color); }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-weight: bold; font-size: 14px; }
+        .badge-red { color: var(--accent-red); background: rgba(239, 68, 68, 0.1); padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+        .badge-yellow { color: var(--accent-yellow); background: rgba(234, 179, 8, 0.1); padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+        
+        .control-group { margin-bottom: 10px; }
+        .control-label { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; }
+        .control-label span:last-child { color: var(--text-color); font-family: monospace; }
+        
+        input[type="range"] { width: 100%; accent-color: #3b82f6; cursor: pointer; }
+        
+        .code-box { background: #0b0c10; border-radius: 8px; padding: 12px; font-family: monospace; font-size: 12px; color: #34d399; overflow-x: auto; white-space: pre; max-height: 200px; border: 1px solid var(--border-color); margin-bottom: 10px; }
+        
+        .btn { background: #2563eb; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .btn:active { background: #1d4ed8; }
+        .reset-btn { background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); padding: 2px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; }
+    </style>
 </head>
 <body>
-<div class="app">
-  <h1>MINH AN CACHE MAKE</h1>
-  <div class="sub">BONE_HEAD SCANNER · IPHONE EDITION</div>
 
-  <section class="panel">
-    <h2>01 · Chọn cache gốc</h2>
-    <input id="file" type="file">
-    <p class="muted">Trong cửa sổ chọn tệp của iPhone, chọn file đã sao lưu
-    từ Filza. Tool chỉ đọc file được chọn.</p>
-    <div id="fileinfo" class="muted">Chưa chọn file.</div>
-  </section>
+    <div class="header">
+        <h1><span>C</span> TOOL MAKE CODE CACHE</h1>
+    </div>
 
-  <section class="panel">
-    <h2>02 · Thiết lập kiểm tra</h2>
-    <label for="needle">Chuỗi cần tìm</label>
-    <input id="needle" type="text" value="bone_Head"
-           autocomplete="off" spellcheck="false">
-    <button id="scan" disabled>KIỂM TRA CACHE</button>
-  </section>
+    <!-- KHU VỰC PREVIEW -->
+    <div class="preview-box">
+        <div class="preview-title">👁️ Preview — Đỏ & Vàng riêng</div>
+        <div class="character-container">
+            <div id="preview-red" class="hitbox-circle"></div>
+            <div id="preview-yellow" class="hitbox-circle"></div>
+            <div class="dummy-head"></div>
+            <div class="dummy-body"></div>
+        </div>
+    </div>
 
-  <section class="panel">
-    <h2>03 · Kết quả kiểm tra</h2>
-    <div id="status" class="status">Đang chờ file.</div>
-    <pre id="result" class="result">Chưa có kết quả.</pre>
-    <button id="export" disabled></button>
-  </section>
+    <!-- VÒNG ĐỎ - ĐẦU -->
+    <div class="section">
+        <div class="section-header">
+            <span style="color: var(--accent-red)">🔴 VÒNG ĐỎ — ĐẦU</span>
+            <button class="reset-btn" onclick="resetGroup('red')">Reset</button>
+        </div>
+        <div class="control-group">
+            <div class="control-label"><span>Đỏ - X</span><span id="val-red-x">0.0000</span></div>
+            <input type="range" id="red-x" min="-0.05" max="0.05" step="0.0001" value="0" oninput="updateTool()">
+        </div>
+        <div class="control-group">
+            <div class="control-label"><span>Đỏ - Y</span><span id="val-red-y">0.0000</span></div>
+            <input type="range" id="red-y" min="-0.05" max="0.05" step="0.0001" value="0" oninput="updateTool()">
+        </div>
+        <div class="control-group">
+            <div class="control-label"><span>Đỏ - Z</span><span id="val-red-z">0.0000</span></div>
+            <input type="range" id="red-z" min="-0.05" max="0.05" step="0.0001" value="0" oninput="updateTool()">
+        </div>
+        <div class="control-group">
+            <div class="control-label"><span>Kích thước (Radius)</span><span id="val-red-size">100%</span></div>
+            <input type="range" id="red-size" min="70" max="140" step="1" value="100" oninput="updateTool()">
+        </div>
+    </div>
 
-  <section class="panel">
-    <h2>04 · Lưu ý</h2>
-    <p class="muted">
-      Tìm thấy bone_Head chỉ xác nhận chuỗi xuất hiện trong dữ liệu có thể
-      đọc được. Kết quả này không xác nhận đã tìm thấy collider hợp lệ.
-      Cache nén hoặc tuần tự hóa có thể cần bộ phân tích Unity phù hợp.
-      
-    </p>
-  </section>
-</div>
+    <!-- VÒNG VÀNG - THÂN -->
+    <div class="section">
+        <div class="section-header">
+            <span style="color: var(--accent-yellow)">🟡 VÒNG VÀNG — THÂN</span>
+            <button class="reset-btn" onclick="resetGroup('yellow')">Reset</button>
+        </div>
+        <div class="control-group">
+            <div class="control-label"><span>Vàng - X</span><span id="val-yellow-x">0.0000</span></div>
+            <input type="range" id="yellow-x" min="-0.05" max="0.05" step="0.0001" value="0" oninput="updateTool()">
+        </div>
+        <div class="control-group">
+            <div class="control-label"><span>Vàng - Y</span><span id="val-yellow-y">0.0000</span></div>
+            <input type="range" id="yellow-y" min="-0.05" max="0.05" step="0.0001" value="0" oninput="updateTool()">
+        </div>
+        <div class="control-group">
+            <div class="control-label"><span>Vàng - Z</span><span id="val-yellow-z">0.0000</span></div>
+            <input type="range" id="yellow-z" min="-0.05" max="0.05" step="0.0001" value="0" oninput="updateTool()">
+        </div>
+        <div class="control-group">
+            <div class="control-label"><span>Kích thước (Radius)</span><span id="val-yellow-size">100%</span></div>
+            <input type="range" id="yellow-size" min="70" max="140" step="1" value="100" oninput="updateTool()">
+        </div>
+    </div>
 
-<script>
-(() => {
-  const $ = id => document.getElementById(id);
-  let selectedFile = null;
-  let report = "";
+    <!-- XUẤT CODE -->
+    <div class="section">
+        <div class="section-header"><span>💻 CODE — Đỏ & Vàng (Male + Female)</span></div>
+        <div class="code-box" id="output-code"></div>
+        <button class="btn" onclick="copyCode()">📋 Sao chép tất cả</button>
+    </div>
 
-  const formatSize = n => {
-    if (n < 1024) return n + " byte";
-    if (n < 1048576) return (n / 1024).toFixed(2) + " KB";
-    return (n / 1048576).toFixed(2) + " MB";
-  };
+    <script>
+        function updateTool() {
+            // Lấy giá trị Đỏ
+            let rx = parseFloat(document.getElementById('red-x').value);
+            let ry = parseFloat(document.getElementById('red-y').value);
+            let rz = parseFloat(document.getElementById('red-z').value);
+            let rSize = parseInt(document.getElementById('red-size').value);
 
-  $("file").addEventListener("change", () => {
-    selectedFile = $("file").files[0] || null;
-    $("scan").disabled = !selectedFile;
-    $("export").disabled = true;
-    report = "";
+            document.getElementById('val-red-x').innerText = rx.toFixed(4);
+            document.getElementById('val-red-y').innerText = ry.toFixed(4);
+            document.getElementById('val-red-z').innerText = rz.toFixed(4);
+            document.getElementById('val-red-size').innerText = rSize + '%';
 
-    if (!selectedFile) {
-      $("fileinfo").textContent = "Chưa chọn file.";
-      return;
-    }
+            // Lấy giá trị Vàng
+            let yx = parseFloat(document.getElementById('yellow-x').value);
+            let yy = parseFloat(document.getElementById('yellow-y').value);
+            let yz = parseFloat(document.getElementById('yellow-z').value);
+            let ySize = parseInt(document.getElementById('yellow-size').value);
 
-    $("fileinfo").textContent =
-      "Tên: " + selectedFile.name +
-      "\nDung lượng: " + formatSize(selectedFile.size) +
-      "\nLoại MIME: " + (selectedFile.type || "Không xác định");
+            document.getElementById('val-yellow-x').innerText = yx.toFixed(4);
+            document.getElementById('val-yellow-y').innerText = yy.toFixed(4);
+            document.getElementById('val-yellow-z').innerText = yz.toFixed(4);
+            document.getElementById('val-yellow-size').innerText = ySize + '%';
 
-    $("status").textContent = "Đã chọn file. Sẵn sàng kiểm tra.";
-    $("result").textContent = "Nhấn KIỂM TRA CACHE để bắt đầu.";
-  });
+            // Cập nhật giao diện Preview trực quan bằng CSS transform
+            let redBox = document.getElementById('preview-red');
+            let yellowBox = document.getElementById('preview-yellow');
 
-  $("scan").addEventListener("click", async () => {
-    if (!selectedFile) return;
+            redBox.style.transform = `translate(${rx * 500}px, ${-ry * 500}px) scale(${rSize / 100})`;
+            yellowBox.style.transform = `translate(${yx * 500}px, ${-yy * 500}px) scale(${ySize / 100})`;
 
-    const needle = $("needle").value;
-    if (!needle) {
-      $("status").textContent = "Lỗi: hãy nhập chuỗi cần tìm.";
-      return;
-    }
+            // Sinh đoạn Code kết quả mô phỏng cấu trúc cấu hình game
+            let generatedText = `// --- VÒNG ĐỎ (Radius: ${rSize}%) ---
+{
+  "m_GameObject": {"m_FileID": 0, "m_PathID": -363676262939371015},
+  "m_Radius": ${(0.25 * (rSize/100)).toFixed(6)},
+  "m_Center": {"x": ${rx.toFixed(6)}, "y": ${(0.8178598 + ry).toFixed(6)}, "z": ${rz.toFixed(6)}}
+},
+// --- VÒNG VÀNG (Radius: ${ySize}%) ---
+{
+  "m_GameObject": {"m_FileID": 0, "m_PathID": 599865478686802449},
+  "m_Radius": ${(0.8991539 * (ySize/100)).toFixed(6)},
+  "m_Center": {"x": ${yx.toFixed(6)}, "y": ${(-0.1308626 + yy).toFixed(6)}, "z": ${yz.toFixed(6)}}
+}`;
 
-    $("scan").disabled = true;
-    $("export").disabled = true;
-    $("status").textContent = "Đang đọc và quét file...";
-    $("result").textContent = "";
-
-    try {
-      const buffer = await selectedFile.arrayBuffer();
-      const bytes = new Uint8Array(buffer);
-
-      // Nhận diện một số dấu hiệu phổ biến, không giải nén file.
-      const head = Array.from(bytes.slice(0, 16))
-        .map(b => b.toString(16).padStart(2, "0")).join(" ");
-      const ascii = Array.from(bytes.slice(0, 16))
-        .map(b => b >= 32 && b <= 126 ? String.fromCharCode(b) : ".")
-        .join("");
-
-      let type = "Chưa xác định";
-      if (ascii.startsWith("UnityFS")) type = "UnityFS AssetBundle";
-      else if (ascii.startsWith("UnityWeb")) type = "UnityWeb (dấu hiệu đầu file)";
-      else if (ascii.startsWith("UnityRaw")) type = "UnityRaw (dấu hiệu đầu file)";
-      else if (bytes[0] === 0x50 && bytes[1] === 0x4b)
-        type = "ZIP hoặc định dạng dựa trên ZIP";
-      else if (bytes[0] === 0x7b || bytes[0] === 0x5b)
-        type = "Có thể là JSON/văn bản";
-
-      // Tìm chuỗi ASCII trong byte của file.
-      const target = new TextEncoder().encode(needle);
-      const offsets = [];
-      let nextAllowed = 0;
-
-      for (let i = 0; i <= bytes.length - target.length; i++) {
-        let match = true;
-        for (let j = 0; j < target.length; j++) {
-          if (bytes[i + j] !== target[j]) {
-            match = false;
-            break;
-          }
+            document.getElementById('output-code').innerText = generatedText;
         }
-        if (match) {
-          offsets.push(i);
-          i += target.length - 1;
+
+        function resetGroup(type) {
+            if(type === 'red') {
+                document.getElementById('red-x').value = 0;
+                document.getElementById('red-y').value = 0;
+                document.getElementById('red-z').value = 0;
+                document.getElementById('red-size').value = 100;
+            } else {
+                document.getElementById('yellow-x').value = 0;
+                document.getElementById('yellow-y').value = 0;
+                document.getElementById('yellow-z').value = 0;
+                document.getElementById('yellow-size').value = 100;
+            }
+            updateTool();
         }
-      }
 
-      const lines = [];
-      lines.push("MINH AN CACHE MAKE — BÁO CÁO KIỂM TRA");
-      lines.push("File: " + selectedFile.name);
-      lines.push("Dung lượng: " + selectedFile.size + " byte");
-      lines.push("Dấu hiệu định dạng: " + type);
-      lines.push("16 byte đầu (hex): " + head);
-      lines.push("Chuỗi tìm kiếm: " + needle);
-      lines.push("Số vị trí khớp ASCII: " + offsets.length);
-      lines.push("");
-      lines.push("CÁC VỊ TRÍ VÀ DỮ LIỆU LÂN CẬN:");
-
-      if (offsets.length === 0) {
-        lines.push("Không tìm thấy chuỗi ASCII trong dữ liệu quét.");
-        lines.push("Lưu ý: chuỗi có thể bị nén, mã hóa hoặc lưu dạng khác.");
-      } else {
-        for (const offset of offsets.slice(0, 200)) {
-          const start = Math.max(0, offset - 16);
-          const end = Math.min(bytes.length, offset + target.length + 24);
-          const context = Array.from(bytes.slice(start, end))
-            .map(b => b.toString(16).padStart(2, "0")).join(" ");
-          lines.push("Offset 0x" + offset.toString(16).toUpperCase() +
-                     " (" + offset + ")");
-          lines.push("  " + context);
+        function copyCode() {
+            let codeText = document.getElementById('output-code').innerText;
+            navigator.clipboard.writeText(codeText).then(() => {
+                alert('Đã sao chép toàn bộ mã thành công!');
+            });
         }
-        if (offsets.length > 200)
-          lines.push("Chỉ hiển thị 200 vị trí đầu tiên.");
-      }
 
-      lines.push("");
-      lines.push("GIỚI HẠN:");
-      lines.push("- Đây là quét chuỗi byte, không phải giải mã Unity.");
-      lines.push("- Không xác nhận collider hay giá trị m_Center.");
-      lines.push("- Không sửa file và không ghi đè game gốc.");
-
-      report = lines.join("\n");
-      $("result").textContent = report;
-      $("status").textContent =
-        "Hoàn tất. Tìm thấy " + offsets.length + " vị trí khớp.";
-      $("export").disabled = false;
-    } catch (err) {
-      $("status").textContent = "Không đọc được file.";
-      $("result").textContent = String(err);
-    } finally {
-      $("scan").disabled = !selectedFile;
-    }
-  });
-
-  $("export").addEventListener("click", () => {
-    if (!report) return;
-    const blob = new Blob([report], {type: "text/plain;charset=utf-8"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "MINH_AN_CACHE_REPORT.txt";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1500);
-  });
-})();
-</script>
+        // Khởi chạy lần đầu
+        updateTool();
+    </script>
 </body>
 </html>
